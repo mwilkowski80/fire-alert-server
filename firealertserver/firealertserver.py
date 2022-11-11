@@ -4,7 +4,7 @@ import asyncio
 import csv
 import logging
 from argparse import ArgumentParser
-from asyncio import StreamWriter, StreamReader, DatagramProtocol, transports
+from asyncio import DatagramProtocol, transports
 from datetime import datetime
 from pathlib import Path
 from typing import List, Callable, Any
@@ -12,12 +12,12 @@ from typing import List, Callable, Any
 log = logging.getLogger('filealertserver')
 
 
-def log_received_data_to_stderr(data: bytes) -> None:
+async def log_received_data_to_stderr(data: bytes) -> None:
     log.debug('Received data = ' + data.decode('utf-8'))
 
 
 def store_received_data_in_csv(path: Path) -> Callable[[bytes], None]:
-    def _store_received_data_in_csv(data: bytes) -> None:
+    async def _store_received_data_in_csv(data: bytes) -> None:
         csv_file_exists = path.exists() and path.stat().st_size > 0
 
         with open(path, 'a' if csv_file_exists else 'w') as f:
@@ -29,15 +29,8 @@ def store_received_data_in_csv(path: Path) -> Callable[[bytes], None]:
     return _store_received_data_in_csv
 
 
-def handle_incoming_packet(listeners: List[Callable[[bytes], None]]):
-    async def _handle_incoming_packet(reader: StreamReader, writer: StreamWriter):
-        for listener in listeners:
-            try:
-                listener(await reader.read())
-            except:
-                log.exception('Error while processing listener')
-
-    return _handle_incoming_packet
+async def send_push_notification(data: bytes):
+    log.debug('Push notification')
 
 
 class HandleUdp(DatagramProtocol):
@@ -49,7 +42,7 @@ class HandleUdp(DatagramProtocol):
 
     def datagram_received(self, data: bytes, addr: tuple[str | Any, int]) -> None:
         for listener in self._listeners:
-            listener(data)
+            asyncio.create_task(listener(data))
 
 
 async def start_server(listeners: List[Callable[[bytes], None]]) -> None:
@@ -76,7 +69,10 @@ def create_args_from_argparse():
 def main():
     args = create_args_from_argparse()
     logging.basicConfig(level=logging.DEBUG if args.debug else logging.INFO)
-    asyncio.run(start_server([log_received_data_to_stderr, store_received_data_in_csv(Path('.') / 'data' / 'raw.csv')]))
+    asyncio.run(start_server([
+        log_received_data_to_stderr,
+        store_received_data_in_csv(Path('.') / 'data' / 'raw.csv'),
+        send_push_notification]))
 
 
 if __name__ == '__main__':
