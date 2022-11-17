@@ -28,6 +28,10 @@ def store_received_data_in_csv(path: Path) -> Callable[[bytes], Coroutine[Any, A
     return _store_received_data_in_csv
 
 
+def send_fire_alert_push_notification(push_notification: PushNotification) -> None:
+    push_notification.push({'action': 'fire-alert'})
+
+
 def create_send_push_notification_func(push_notification: PushNotification):
     async def _send_push_notification(payload: bytes):
         def _should_fire_alert_from_client_payload():
@@ -39,7 +43,7 @@ def create_send_push_notification_func(push_notification: PushNotification):
 
         if _should_fire_alert_from_client_payload():
             log.info('Push notification requested. Proceeding')
-            push_notification.push({'action': 'fire-alert'})
+            send_fire_alert_push_notification(push_notification)
         else:
             log.debug(f'Push notification requested and filtered. Payload: {payload.decode("utf-8")}')
 

@@ -5,7 +5,7 @@ import logging
 import uvicorn
 from fastapi import FastAPI
 
-from firealertserver.appfacade import app_on_user_token, app_on_startup
+from firealertserver.appfacade import app_on_user_token, app_on_startup, app_test_push_notification
 from firealertserver.parseinputargs import create_args_from_argparse
 from firealertserver.user_token import UserToken
 
@@ -16,6 +16,12 @@ log = logging.getLogger('filealertserver.main')
 @app.post("/user-token")
 async def userToken(userToken: UserToken):
     app_on_user_token(userToken)
+    return {"errorCode": "OK"}
+
+
+@app.post('/test-push-notification')
+async def test_push_notification():
+    app_test_push_notification()
     return {"errorCode": "OK"}
 
 
