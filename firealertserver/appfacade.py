@@ -21,10 +21,31 @@ def app_on_user_token(user_token: UserToken):
     push_notification.update_user_token(user_token.userToken)
 
 
-def app_on_startup():
-    args = create_args_from_argparse()
+SERVICES = {
+    'log': log_received_data_to_stderr,
+    'store': store_received_data_in_csv(Path('.') / 'data' / 'raw.csv'),
+    'fire-alert': create_send_push_notification_func(push_notification)
+}
 
-    asyncio.create_task(start_udp_server((args.udp_bind_address, args.udp_bind_port), [
-        log_received_data_to_stderr,
-        store_received_data_in_csv(Path('.') / 'data' / 'raw.csv'),
-        create_send_push_notification_func(push_notification)]))
+
+def parse_args():
+    return create_args_from_argparse(SERVICES.keys())
+
+
+def app_on_startup():
+    args = parse_args()
+
+    def _select_services():
+        svcs_strs = args.services.split(',')
+        output = []
+        for svc_str in svcs_strs:
+            if svc_str in SERVICES:
+                output.append(SERVICES[svc_str])
+            else:
+                raise KeyError('I could not found service %s' % svc_str)
+        return output
+
+    asyncio.create_task(start_udp_server(
+        (args.udp_bind_address, args.udp_bind_port),
+        _select_services()
+    ))

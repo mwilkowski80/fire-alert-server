@@ -5,8 +5,7 @@ import logging
 import uvicorn
 from fastapi import FastAPI
 
-from firealertserver.appfacade import app_on_user_token, app_on_startup, app_test_push_notification
-from firealertserver.parseinputargs import create_args_from_argparse
+from firealertserver.appfacade import app_on_user_token, app_on_startup, app_test_push_notification, parse_args
 from firealertserver.user_token import UserToken
 
 app = FastAPI()
@@ -31,7 +30,7 @@ async def startup():
 
 
 def main():
-    args = create_args_from_argparse()
+    args = parse_args()
     logging_level = logging.DEBUG if args.debug else logging.INFO
     logging.basicConfig(level=logging_level,
                         format='%(asctime)s:%(levelname)s:%(name)s:%(message)s')
