@@ -9,12 +9,15 @@ This tool was never meant for professional use and please do not evaluate my pro
 
 ## Solution architecture
 
+<!--
 ```puml
-@startuml
+@startuml puml-architecture
+
 box "IoT device" iot
 participant "iot-fire-alert\nNodeMCU v2" as nodemcu
 participant "PIR sensor" as pir
-endbox
+end box
+
 participant "fire-alert-server" as fas
 participant "Firebase Cloud\nMessaging" as fcm
 participant "Android App" as app
@@ -40,6 +43,8 @@ fcm -> app : Fire alert
 
 @enduml
 ```
+-->
+![](puml-architecture.svg)
 
 `iot-fire-alert` project is available at https://github.com/mwilkowski80/iot-esp-fire-alert.
 
