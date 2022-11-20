@@ -3,6 +3,10 @@
 This tool has a simple purpose: You want to get alerted that someone entered Your room :). When it happens, it triggers
 an alarm on Your phone.
 
+## Disclaimer
+
+This tool was never meant for professional use and please do not evaluate my professional skills based on it :). I created it because my children requested to catch Santa while he is coming with Christmas gifts in the middle of the night. So I did (created the app, of course). Whether we caught the Santa is another story :). 
+
 ## Solution architecture
 
 ```puml
